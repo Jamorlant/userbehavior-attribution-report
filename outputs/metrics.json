@@ -1,0 +1,300 @@
+{
+  "audit": {
+    "raw_rows": 911472,
+    "clean_rows": 911080,
+    "dropped_rows": 392,
+    "dup_rows_removed": 392,
+    "users": 50020,
+    "items": 6190,
+    "categories": 40,
+    "date_start": "2017-11-25 00:00:22",
+    "date_end": "2017-12-03 23:59:56",
+    "days": 9,
+    "behavior_counts": {
+      "pv": 818578,
+      "cart": 45599,
+      "fav": 28644,
+      "buy": 18259
+    }
+  },
+  "funnel": {
+    "pv": 818578,
+    "cart": 45599,
+    "fav": 28644,
+    "buy": 18259,
+    "pv2cart": 0.05570513744566798,
+    "pv2fav": 0.03499238924085426,
+    "pv2intent": 0.09069752668652224,
+    "pv2buy": 0.022305754613488268,
+    "intent2buy_users": 0.42544333076329993,
+    "pv2buy_users": 0.27578968412634947
+  },
+  "funnel_users": [
+    {
+      "step": "浏览 (pv)",
+      "users": 50020,
+      "base_users": NaN,
+      "rate": NaN,
+      "ci_low": NaN,
+      "ci_high": NaN
+    },
+    {
+      "step": "加购 (cart)",
+      "users": 25319,
+      "base_users": 50020.0,
+      "rate": 0.5061775289884046,
+      "ci_low": 0.5017957402883123,
+      "ci_high": 0.5105583688771062
+    },
+    {
+      "step": "收藏 (fav)",
+      "users": 19364,
+      "base_users": 50020.0,
+      "rate": 0.387125149940024,
+      "ci_low": 0.3828652714805429,
+      "ci_high": 0.39140236493385033
+    },
+    {
+      "step": "意向 (加购∪收藏)",
+      "users": 32425,
+      "base_users": 50020.0,
+      "rate": 0.6482407037185126,
+      "ci_low": 0.6440446602777155,
+      "ci_high": 0.6524139787565165
+    },
+    {
+      "step": "购买 (buy)",
+      "users": 13795,
+      "base_users": 32425.0,
+      "rate": 0.42544333076329993,
+      "ci_low": 0.4200709740779706,
+      "ci_high": 0.4308333517799101
+    }
+  ],
+  "cart2buy": {
+    "carted_pairs": 34812,
+    "converted_pairs": 11894,
+    "cart2buy": 0.34166379409399056,
+    "cart2buy_24h": 0.2941514420314834,
+    "median_lag_hours": 8.370694444444444,
+    "censored_pairs": 10779,
+    "converted_within_1h": 0.0797881284681352,
+    "converted_within_24h": 0.8609382882125441,
+    "buy_events": 18259,
+    "buy_share_without_cart": 0.23823867681691224
+  },
+  "hour": {
+    "peak_view_hour": 21,
+    "peak_buy_conv_hour": 23,
+    "worst_conv_hour": 19,
+    "conv_ratio_best_worst": 2.6524268161025244
+  },
+  "weekday": {
+    "best_conv": "周二",
+    "worst_conv": "周六",
+    "weekend_conv": 0.018476011708833773,
+    "weekday_conv": 0.025868960644692497,
+    "weekend_view_share": 0.4786996474373853
+  },
+  "category": {
+    "top_buy_conv": [
+      {
+        "category_id": 3299,
+        "pv": 3564,
+        "pv2cart": 0.08,
+        "cart2buy": 0.4395,
+        "pv2buy": 0.037
+      },
+      {
+        "category_id": 5491,
+        "pv": 9475,
+        "pv2cart": 0.0755,
+        "cart2buy": 0.4487,
+        "pv2buy": 0.0351
+      },
+      {
+        "category_id": 285,
+        "pv": 3600,
+        "pv2cart": 0.0736,
+        "cart2buy": 0.399,
+        "pv2buy": 0.0347
+      },
+      {
+        "category_id": 3025,
+        "pv": 19444,
+        "pv2cart": 0.0736,
+        "cart2buy": 0.4377,
+        "pv2buy": 0.0347
+      },
+      {
+        "category_id": 2066,
+        "pv": 34800,
+        "pv2cart": 0.0727,
+        "cart2buy": 0.4293,
+        "pv2buy": 0.0346
+      }
+    ],
+    "anomaly_ids": [
+      833,
+      1792,
+      3436
+    ],
+    "anomaly": [
+      {
+        "category_id": 833,
+        "pv": 9549,
+        "pv2cart": 0.0822,
+        "cart2buy": 0.1054,
+        "pv2buy": 0.0158,
+        "cart_gap": 0.0271,
+        "c2b_gap": -0.2375
+      },
+      {
+        "category_id": 1792,
+        "pv": 4997,
+        "pv2cart": 0.0754,
+        "cart2buy": 0.1064,
+        "pv2buy": 0.0166,
+        "cart_gap": 0.0204,
+        "c2b_gap": -0.2366
+      },
+      {
+        "category_id": 3436,
+        "pv": 29404,
+        "pv2cart": 0.0803,
+        "cart2buy": 0.1081,
+        "pv2buy": 0.0161,
+        "cart_gap": 0.0252,
+        "c2b_gap": -0.2348
+      }
+    ],
+    "mean_pv2cart": 0.05506809097007019,
+    "mean_cart2buy": 0.342981230174763
+  },
+  "segment": [
+    {
+      "segment": "低频",
+      "users": 18314,
+      "pv": 90294,
+      "cart": 6425,
+      "fav": 3655,
+      "buy": 2580,
+      "buyers": 2371,
+      "carts": 5231,
+      "median_pv": 5.0,
+      "median_days": 1.0,
+      "user_share": 0.3661,
+      "buy_user_rate": 0.1295,
+      "intent_user_rate": 0.2856,
+      "pv2buy": 0.0286,
+      "orders_per_buyer": 1.0881,
+      "pv_share": 0.1103,
+      "buy_share": 0.1413,
+      "pv_per_order": 34.9977
+    },
+    {
+      "segment": "中频",
+      "users": 16033,
+      "pv": 206928,
+      "cart": 13275,
+      "fav": 7877,
+      "buy": 5247,
+      "buyers": 4329,
+      "carts": 8524,
+      "median_pv": 13.0,
+      "median_days": 3.0,
+      "user_share": 0.3205,
+      "buy_user_rate": 0.27,
+      "intent_user_rate": 0.5317,
+      "pv2buy": 0.0254,
+      "orders_per_buyer": 1.2121,
+      "pv_share": 0.2528,
+      "buy_share": 0.2874,
+      "pv_per_order": 39.4374
+    },
+    {
+      "segment": "高频",
+      "users": 15673,
+      "pv": 521356,
+      "cart": 25899,
+      "fav": 17112,
+      "buy": 10432,
+      "buyers": 7095,
+      "carts": 11564,
+      "median_pv": 30.0,
+      "median_days": 5.0,
+      "user_share": 0.3133,
+      "buy_user_rate": 0.4527,
+      "intent_user_rate": 0.7378,
+      "pv2buy": 0.02,
+      "orders_per_buyer": 1.4703,
+      "pv_share": 0.6369,
+      "buy_share": 0.5713,
+      "pv_per_order": 49.9766
+    }
+  ],
+  "bucket": [
+    {
+      "bucket": "凌晨 0-6",
+      "buy": 5180,
+      "cart": 2008,
+      "fav": 1305,
+      "pv": 43863,
+      "intent_rate": 0.0755,
+      "pv2buy": 0.1181,
+      "view_share": 0.0536,
+      "buy_share": 0.2837
+    },
+    {
+      "bucket": "上午 7-11",
+      "buy": 2753,
+      "cart": 7260,
+      "fav": 4804,
+      "pv": 135502,
+      "intent_rate": 0.089,
+      "pv2buy": 0.0203,
+      "view_share": 0.1655,
+      "buy_share": 0.1508
+    },
+    {
+      "bucket": "下午 12-17",
+      "buy": 4041,
+      "cart": 13412,
+      "fav": 8542,
+      "pv": 250452,
+      "intent_rate": 0.0877,
+      "pv2buy": 0.0161,
+      "view_share": 0.306,
+      "buy_share": 0.2213
+    },
+    {
+      "bucket": "晚间 18-23",
+      "buy": 6285,
+      "cart": 22919,
+      "fav": 13993,
+      "pv": 388761,
+      "intent_rate": 0.0949,
+      "pv2buy": 0.0162,
+      "view_share": 0.4749,
+      "buy_share": 0.3442
+    }
+  ],
+  "cart_hour_conv": {
+    "best_hour": 20,
+    "best_rate": 0.42551440329218104,
+    "worst_hour": 4,
+    "worst_rate": 0.1125,
+    "night_rate": 0.16351791530944626,
+    "day_rate": 0.31177141409021797,
+    "evening_rate": 0.3842679929114503
+  },
+  "cart_weekday_conv": {
+    "周一": 0.3721,
+    "周二": 0.3747,
+    "周三": 0.3675,
+    "周四": 0.3526,
+    "周五": 0.3448,
+    "周六": 0.2888,
+    "周日": 0.3086
+  }
+}

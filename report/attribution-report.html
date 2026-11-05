@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>淘宝用户行为数据 · 购买转化归因报告</title>
+<style>
+  :root {
+    --ink: #1b2733; --muted: #66727f; --line: #e3e7ec;
+    --accent: #c0553f; --blue: #2f4b63; --bg: #ffffff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 56px 28px 80px; background: #f4f5f7; color: var(--ink);
+    font-family: "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", system-ui, sans-serif;
+    font-size: 15.5px; line-height: 1.85;
+  }
+  main {
+    max-width: 860px; margin: 0 auto; background: var(--bg);
+    padding: 64px 72px 72px; border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(27,39,51,.08), 0 12px 32px rgba(27,39,51,.06);
+  }
+  h1 { font-size: 27px; line-height: 1.4; margin: 0 0 6px; letter-spacing: -.3px; }
+  h1::after { content: ""; display: block; width: 56px; height: 3px; background: var(--accent); margin: 18px 0 0; }
+  h2 { font-size: 19px; margin: 40px 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+  h3 { font-size: 16px; margin: 26px 0 8px; color: var(--blue); }
+  p { margin: 12px 0; }
+  main > ol, main ol ol { margin: 12px 0; padding-left: 24px; }
+  li { margin: 6px 0; }
+  table { border-collapse: collapse; width: 100%; margin: 18px 0; font-size: 13.5px; }
+  th, td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+  th { background: #f7f8fa; font-weight: 600; color: var(--blue); }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  img { max-width: 100%; height: auto; display: block; margin: 18px auto; border: 1px solid var(--line); }
+  blockquote {
+    margin: 20px 0; padding: 14px 18px; background: #fbf7f4;
+    border-left: 3px solid var(--accent); color: #4a4137; font-size: 14px;
+  }
+  code { background: #f2f4f7; padding: 1px 5px; border-radius: 3px; font-size: 13px; }
+  pre { background: #f7f8fa; border: 1px solid var(--line); padding: 14px 16px; overflow-x: auto;
+        font-size: 13px; line-height: 1.7; border-radius: 3px; }
+  pre code { background: none; padding: 0; }
+  a { color: var(--blue); }
+  strong { color: var(--ink); }
+  @media print {
+    body { padding: 0; background: #fff; }
+    main { box-shadow: none; padding: 0; max-width: none; }
+    h2 { break-after: avoid; }
+    img { break-inside: avoid; max-height: 88vh; }
+    table { break-inside: avoid; }
+  }
+  @page { size: A4; margin: 16mm; }
+</style>
+</head>
+<body>
+<main>
+<h1>淘宝用户行为数据 · 购买转化归因报告</h1>
+<blockquote>
+<p><strong>数据说明（请先读这段）</strong>
+本报告使用<strong>合成数据集</strong>，其字段与行为类型完全对齐阿里巴巴天池公开数据集「淘宝用户行为数据集 UserBehavior」（<code>user_id, item_id, category_id, behavior_type, timestamp</code>，时间窗同为 2017-11-25 至 2017-12-03）。生成规则、随机种子与复现命令见 <a href="../scripts/generate_data.py">scripts/generate_data.py</a> 与「1.1 数据」。<strong>下文所有数字均由脚本在真实计算中得出，但不等同于天猫/淘宝大盘结论</strong>，属于"方法可迁移"的演示分析。</p>
+</blockquote>
+<hr>
+<h2>摘要</h2>
+<p><strong>一句话结论：漏斗最细的一环是"浏览→加购"（5.57%）而不是"加购→购买"（34.2%）。意向本身才是稀缺资源——90.9% 的浏览没有留下任何加购/收藏信号；把预算继续堆在拉新流量上，边际收益低于先做好"看完就加购"与"加购后 24h 内兑现"这两件事。</strong></p>
+<table>
+<thead>
+<tr>
+<th>核心指标</th>
+<th>数值</th>
+<th>对比基准</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>清洗后行为量</td>
+<td>911,080 条</td>
+<td>9 天（2017-11-25 ~ 12-03）</td>
+</tr>
+<tr>
+<td>去重用户 / 商品 / 类目</td>
+<td>50,020 / 6,190 / 40</td>
+<td>—</td>
+</tr>
+<tr>
+<td>浏览用户 → 下单用户</td>
+<td>27.6%</td>
+<td>每 100 个浏览用户有 72.4 人不买</td>
+</tr>
+<tr>
+<td>浏览 → 意向（加购∪收藏，用户级）</td>
+<td>64.8%</td>
+<td>95% CI 64.4%–65.2%</td>
+</tr>
+<tr>
+<td>意向 → 购买</td>
+<td>42.5%</td>
+<td>95% CI 42.0%–43.1%</td>
+</tr>
+<tr>
+<td>加购 → 购买（48h 观测窗）</td>
+<td>34.2%</td>
+<td>24h 内完成 86.1% 的转化</td>
+</tr>
+<tr>
+<td>晚间 18-23 点加购率</td>
+<td>9.49%</td>
+<td>全天最高，凌晨 7.55%</td>
+</tr>
+<tr>
+<td>周末浏览→购买</td>
+<td>1.85%</td>
+<td>工作日 2.59%（低 28%）</td>
+</tr>
+<tr>
+<td>三个异常类目加购→购买</td>
+<td>10.5%–10.8%</td>
+<td>40 类目均值 34.3%</td>
+</tr>
+</tbody>
+</table>
+<p>三条要点：</p>
+<ol>
+<li><strong>漏斗的主流失口在"意向"环节</strong>：1,000 次浏览只产生 90.7 个加购/收藏行为、22.3 笔订单，90.9% 的浏览行为没有产生任何意向信号。</li>
+<li><strong>时间不是流量问题，而是兑现问题</strong>：晚间拿到了 47.5% 的浏览，加购率与加购后成交率同时最高；周末拿到了 47.9% 的浏览，转化却比工作日低 28%。</li>
+<li><strong>高活跃用户是流量引擎、不是转化引擎</strong>：31.3% 的高频用户贡献 63.7% 浏览与 57.1% 订单，但浏览→购买率仅 2.00%，低于低频用户的 2.86%。</li>
+</ol>
+<hr>
+<h2>1 数据与方法</h2>
+<h3>1.1 数据</h3>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>来源</td>
+<td><strong>合成数据</strong>（<code>scripts/generate_data.py</code>，seed=42）。天池原数据集下载需登录（返回 302 至登录页），GitHub 上的镜像文件仅数千行，不足以支撑类目级归因，故按公开数据集的统计特征建模</td>
+</tr>
+<tr>
+<td>Schema</td>
+<td><code>user_id, item_id, category_id, behavior_type ∈ {pv, cart, fav, buy}, timestamp</code></td>
+</tr>
+<tr>
+<td>规模</td>
+<td>911,080 条行为 / 50,020 用户 / 6,190 商品 / 40 类目 / 9 天</td>
+</tr>
+<tr>
+<td>行为占比</td>
+<td>pv 89.85%，cart 5.00%，fav 3.14%，buy 2.00%（公开数据集常见量级为 89.6/5.5/3.3/2.0）</td>
+</tr>
+<tr>
+<td>建模要素</td>
+<td>昼夜节律（22 点浏览峰值）、周末浏览抬升而成交走弱、类目长尾、用户活跃度与购买意图的负相关、加购后跨天犹豫（指数分布延迟）</td>
+</tr>
+<tr>
+<td>脱敏</td>
+<td><code>user_id</code> 全部为随机整数，无任何个人身份字段；类目以 <code>C-xxx</code> 匿名编号指代，不出现任何真实企业/品牌名称</td>
+</tr>
+</tbody>
+</table>
+<h3>1.2 清洗</h3>
+<ul>
+<li>字段空值、非法 <code>behavior_type</code> 直接剔除；完全重复行去重 <strong>392 行</strong>，保留 911,080 行（剔除率 0.04%）。</li>
+<li>时间窗截断到 2017-11-25 00:00 ~ 12-03 23:59。</li>
+</ul>
+<h3>1.3 指标口径（本报告最容易踩坑的部分）</h3>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>定义</th>
+<th>为什么这样定义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>用户级漏斗</td>
+<td>去重用户数递进：浏览 → 加购∪收藏 → 购买</td>
+<td>回答"有多少人走到了下一步"，避免同一用户多次浏览抬高分母</td>
+</tr>
+<tr>
+<td>行为级转化率</td>
+<td>目标行为次数 / pv 次数</td>
+<td>反映单位流量的产出效率</td>
+</tr>
+<tr>
+<td>加购→购买（序列口径）</td>
+<td>同一 <code>(user_id, item_id)</code> 上，加购之后是否出现购买</td>
+<td>只有序列口径才能回答"加购了却没买"</td>
+</tr>
+<tr>
+<td>观测窗校正</td>
+<td>只统计距数据集末尾 ≥48h 的购物车（删失 10,779 个）</td>
+<td>否则末尾两天的购物车会被系统性判为"未转化"，周末指标被压低</td>
+</tr>
+<tr>
+<td>时段归因</td>
+<td>按<strong>加购发生的小时</strong>统计成交率，而非按下单小时</td>
+<td>下单延迟中位 8.4h，用下单时刻会把晚间订单错记到凌晨</td>
+</tr>
+<tr>
+<td>首日剔除</td>
+<td>11-25 不计入日趋势</td>
+<td>前一天没有购物车，首日购买数系统性偏低（939 vs 常规 ~2,000）</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2>2 漏斗分析</h2>
+<p><img alt="用户级漏斗" src="../figures/fig1_funnel_users.png"></p>
+<p><strong>用户级</strong>（50,020 名浏览用户为基数）：</p>
+<table>
+<thead>
+<tr>
+<th>环节</th>
+<th>用户数</th>
+<th>相对上一步</th>
+<th>95% CI</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>浏览 pv</td>
+<td>50,020</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td>加购 cart</td>
+<td>25,319</td>
+<td>50.6%</td>
+<td>50.2%–51.1%</td>
+</tr>
+<tr>
+<td>收藏 fav</td>
+<td>19,364</td>
+<td>38.7%</td>
+<td>38.3%–39.1%</td>
+</tr>
+<tr>
+<td>意向（加购∪收藏）</td>
+<td>32,425</td>
+<td>64.8%</td>
+<td>64.4%–65.2%</td>
+</tr>
+<tr>
+<td>购买 buy</td>
+<td>13,795</td>
+<td><strong>42.5%</strong>（占意向）</td>
+<td>42.0%–43.1%</td>
+</tr>
+</tbody>
+</table>
+<p><strong>行为级</strong>：1,000 次浏览 → 55.7 次加购、35.0 次收藏、22.3 次购买。</p>
+<p><strong>加购之后发生了什么</strong>（34,812 个有效购物车，48h 观测窗）：</p>
+<ul>
+<li>整体成交率 <strong>34.2%</strong>，24h 内成交 <strong>29.4%</strong>；24h 内完成了全部转化的 <strong>86.1%</strong>。</li>
+<li>延迟中位 <strong>8.4 小时</strong>，1 小时内成交仅 <strong>8.0%</strong>——"马上催付"性价比很低，真正的窗口是 T+2h 到 T+24h。</li>
+<li><strong>23.8% 的订单没有经过加购</strong>（直接下单），说明加购不是唯一入口，但它是最大的一块"可干预库存"。</li>
+</ul>
+<p><img alt="加购成交节奏" src="../figures/fig8_cart_lag.png"></p>
+<p><strong>流失点判断</strong>：用户级 35.2% 的人停在"只看不加购"，行为级 90.9% 的浏览没有产生任何意向信号——<strong>意向才是稀缺资源</strong>。反过来，一旦产生了加购，34.2% 会在 48h 内成交，这个水位在零售场景里属于正常区间。所以优化重心应该是"让浏览更容易变成加购"，而不是"再把钱砸进漏斗顶部"。</p>
+<hr>
+<h2>3 归因发现</h2>
+<h3>发现 1｜晚间 18-23 点：流量、加购率、成交率三重叠加</h3>
+<p><img alt="小时转化" src="../figures/fig3_hour_conversion.png"></p>
+<ul>
+<li>晚间 4 个时段占<strong>额度最高的资源</strong>：浏览 47.5%、加购量 22,919（占全部加购的一半以上）。</li>
+<li>加购率 9.49%，比凌晨 0-6 点的 7.55% 高 <strong>25.7%</strong>（相对）。</li>
+<li>关键在于<strong>加购后的兑现率</strong>：晚间加购的购物车成交率 <strong>38.4%</strong>，日间 31.2%，凌晨仅 <strong>16.4%</strong>。</li>
+<li>单小时极值：20 点加购后成交率 <strong>42.6%</strong>，4 点仅 <strong>11.3%</strong>，相差 3.8 倍。</li>
+</ul>
+<blockquote>
+<p>结论：同样一次加购，发生在晚间比发生在凌晨多 1 倍以上的成交概率。凌晨的加购是"想做但没条件做"的库存，不是无效流量。</p>
+</blockquote>
+<h3>发现 2｜周末：流量红利，成交荒漠</h3>
+<p><img alt="星期转化" src="../figures/fig4_weekday_conversion.png"></p>
+<ul>
+<li>周末（4/9 天）拿走 <strong>47.9% 的浏览</strong>，但浏览→购买仅 <strong>1.85%</strong>，工作日 <strong>2.59%</strong>，低 <strong>28%</strong>。</li>
+<li>按加购时段看成交率：周一至周五 34.5%–37.5%，<strong>周六 28.9%、周日 30.9%</strong>，整体比工作日低约 <strong>20%</strong>（29.9% vs 36.2%）。</li>
+<li>周末的行为结构更"逛"：收藏率更高（意向行为更偏"先存着"），下单决策被推迟到工作日。</li>
+</ul>
+<blockquote>
+<p>结论：周末不是"人少"，是"人来了不下单"。周末更适合做种草、加购激励与优惠券蓄水，把成交留到周一到周五兑现。</p>
+</blockquote>
+<h3>发现 3｜用户分层：高频用户撑流量，低频用户撑效率</h3>
+<p><img alt="用户分层" src="../figures/fig7_user_segment.png"></p>
+<table>
+<thead>
+<tr>
+<th>分层</th>
+<th>用户占比</th>
+<th>浏览占比</th>
+<th>订单占比</th>
+<th>浏览→购买</th>
+<th>每单所需浏览</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>低频（≤5 次浏览）</td>
+<td>36.6%</td>
+<td>11.0%</td>
+<td>14.1%</td>
+<td><strong>2.86%</strong></td>
+<td>35.0</td>
+</tr>
+<tr>
+<td>中频</td>
+<td>32.1%</td>
+<td>25.3%</td>
+<td>28.7%</td>
+<td>2.54%</td>
+<td>39.4</td>
+</tr>
+<tr>
+<td>高频</td>
+<td>31.3%</td>
+<td><strong>63.7%</strong></td>
+<td><strong>57.1%</strong></td>
+<td><strong>2.00%</strong></td>
+<td>50.0</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>高频用户贡献 63.7% 的浏览，却只换来 2.00% 的转化；低频用户用 1/6 的浏览换来 14.1% 的订单。</li>
+<li>高频用户的 <code>浏览/单</code> 是低频用户的 <strong>1.43 倍</strong>——典型"逛得多、买得少"。</li>
+</ul>
+<blockquote>
+<p>结论：用"浏览次数"当用户价值的代理指标会系统性高估高频用户。投放应面向"低频 + 有加购"的组合，而不是面向"最近很活跃"的人群包。</p>
+</blockquote>
+<h3>发现 4｜类目差异：头部 3.3%，尾部 1.6%</h3>
+<p><img alt="类目转化排名" src="../figures/fig6_category_rank.png"></p>
+<ul>
+<li>40 个类目浏览→购买率均值 2.22%，10 分位 1.19%，90 分位 3.46%，头部（3.3%–3.7%）与尾部（1.1%–1.6%）相差 <strong>2 倍以上</strong>。</li>
+<li>类目占用的流量与产出严重不匹配：有的类目吃掉 5% 流量只贡献 2.6% 订单。</li>
+</ul>
+<blockquote>
+<p>结论：类目是比"时段"更强的分层变量。同预算下，向高转化类目倾斜的边际订单增量更大。</p>
+</blockquote>
+<h3>发现 5（反直觉）｜三个类目"加购跑赢大盘，成交只有均值的 1/3"</h3>
+<p><img alt="类目散点" src="../figures/fig5_category_scatter.png"></p>
+<table>
+<thead>
+<tr>
+<th>类目</th>
+<th>浏览</th>
+<th>加购率</th>
+<th>加购→购买</th>
+<th>浏览→购买</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C-833</td>
+<td>9,549</td>
+<td><strong>8.22%</strong></td>
+<td><strong>10.54%</strong></td>
+<td>1.58%</td>
+</tr>
+<tr>
+<td>C-1792</td>
+<td>4,997</td>
+<td><strong>7.54%</strong></td>
+<td><strong>10.64%</strong></td>
+<td>1.66%</td>
+</tr>
+<tr>
+<td>C-3436</td>
+<td>29,404</td>
+<td><strong>8.03%</strong></td>
+<td><strong>10.81%</strong></td>
+<td>1.61%</td>
+</tr>
+<tr>
+<td>40 类目均值</td>
+<td>—</td>
+<td>5.51%</td>
+<td>34.30%</td>
+<td>2.22%</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>加购率比均值高 <strong>37%–49%</strong>，但加购后的成交率只有均值的 <strong>31%</strong>。</li>
+<li>三个类目合计吃掉 <strong>5.4% 的浏览</strong>，只产出 <strong>3.9% 的订单</strong>；累计 2,683 个加购，仅成交约 288 单。</li>
+</ul>
+<p><strong>可能原因（需真实数据验证）</strong>：</p>
+<ol>
+<li><strong>比价/凑单型决策</strong>——加购是"放进购物车比价、等满减"，成交被大促节奏截走（验证：看这几个类目加购后的跨类目行为，是否大量浏览同类竞品；看最终成交是否集中在促销日）。</li>
+<li><strong>价格锚定失败</strong>——加购率高说明商品页有吸引力（图/文案/低价引流款），但结算页的运费、起送门槛或规格加价把用户劝退（验证：加购→进入结算页的转化，以及取消订单原因）。</li>
+<li><strong>规格/库存问题</strong>——加购的是低价引流 SKU，实际可售的是高价 SKU（验证：按 SKU 粒度重算加购→成交）。</li>
+</ol>
+<blockquote>
+<p>这是本报告最值得跟进的一条：它同时具备"流量大、加购意愿强、成交极差"三个特征，是最容易定位原因、也最容易见效的优化对象。</p>
+</blockquote>
+<hr>
+<h2>4 可执行建议</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>建议</th>
+<th>依据</th>
+<th>预期收益（本数据测算）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><strong>把加购激励做成常驻机制</strong>：加购后发"购物车专属券"，24h 未付再补一次提醒</td>
+<td>加购→购买仅 34.2%，86.1% 的转化在 24h 内完成、中位 8.4h</td>
+<td>加购成交率每 +1pp ≈ +348 单（+1.9% 总订单）；首发触达建议 T+2h、二次 T+20h</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>预算向晚间 18-23 点集中，凌晨降权</strong></td>
+<td>晚间加购率 9.49% / 加购后成交 38.4%；凌晨成交仅 16.4%</td>
+<td>每 1,000 个加购从凌晨迁到晚间，约多成交 220 单</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>周末改成"蓄水场"而非"收割场"</strong>：周末主打加购返券、预约开售，成交动作引导至工作日</td>
+<td>周末成交率 29.9% vs 工作日 36.2%</td>
+<td>周末成交率追平工作日 ≈ +703 单（+3.9% 总订单）</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>定向优化 C-833 / C-1792 / C-3436</strong>：先查结算页摩擦（运费门槛/规格/库存），再做满减凑单工具</td>
+<td>三个类目 5.4% 流量、3.9% 订单，加购→成交仅 10.8%</td>
+<td>追平均值 ≈ +636 单（+3.5% 总订单）</td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>人群包从"高活跃"换成"低频+近期加购"</strong></td>
+<td>低频用户浏览→购买 2.86%，高频仅 2.00%</td>
+<td>同等曝光下的单位浏览订单效率提升约 43%</td>
+</tr>
+</tbody>
+</table>
+<p>优先级建议：<strong>1 &gt; 3 &gt; 4 &gt; 2 &gt; 5</strong>。建议 1 依赖现有的购物车数据即可上线，是零成本项；建议 3、4 需要跨部门协同（营销节奏、商品/结算页）。</p>
+<hr>
+<h2>5 局限与下一步</h2>
+<ol>
+<li><strong>数据是合成的，不是真实淘宝行为</strong>。结构、量级、趋势方向按公开数据集特征校准，但具体百分比不构成对真实大盘的判断。所有结论的正确用法是"方法可迁移"，而非"结论可直接抄"。</li>
+<li><strong>没有金额维度</strong>。<code>UserBehavior</code> 原始数据没有价格与成交金额，因此本报告只能做"订单数"归因，无法做 GMV 归因。若有金额，类目结论可能会反转（高加购低成交的类目可能是高客单、低毛利结构）。</li>
+<li><strong>观测窗有限（9 天）</strong>。加购→购买的观测窗只覆盖 48h 内的行为，跨大促周期的长决策链路被低估；首日与末日已做删失/剔除处理，但跨周复购无法观测。</li>
+<li><strong>直接购买占比 23.8%</strong>。这部分订单没有加购路径，漏斗并未覆盖它们的决策过程（多为"立即购买"入口）。</li>
+<li><strong>相关不等于因果</strong>。晚间转化更高，可能同时是"晚间上线的人本身意图更强"的选择效应。要证因果需要做时段 A/B 或倾向得分匹配。</li>
+</ol>
+<p><strong>下一步</strong>：① 用真实 UserBehavior 数据重跑（脚本已参数化，替换 <code>data/</code> 即可）；② 引入价格/优惠券维度，把订单归因升级为 GMV 归因；③ 对建议 1 做 30 天 A/B，验证"加购后 T+2h 触达"的真实增量。</p>
+<hr>
+<h2>附录：目录与复现</h2>
+<pre><code>scripts/generate_data.py   合成数据（同 schema，seed=42）
+scripts/analyze.py         清洗 + 漏斗 + 归因指标 → outputs/
+scripts/make_figures.py    8 张图 → figures/
+outputs/                   指标明细表 (csv) + metrics.json
+figures/                   报告图表
+report/                    本报告 (md / html)
+</code></pre>
+<pre><code class="language-bash">pip install -r requirements.txt
+python scripts/generate_data.py --rows 1000000 --out data/userbehavior.csv.gz
+python scripts/analyze.py
+python scripts/make_figures.py
+python scripts/build_report.py    # 生成 report/attribution-report.html
+</code></pre>
+<p>图表清单：图1 用户漏斗｜图2 每日趋势｜图3 小时转化｜图4 星期转化｜图5 类目散点｜图6 类目排名｜图7 用户分层｜图8 加购成交节奏。</p>
+</main>
+</body>
+</html>
