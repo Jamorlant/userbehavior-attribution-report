@@ -1,0 +1,65 @@
+# 数据清单：仓库里实际用的数据，以及"报告结论基于哪一份数据"。
+# 原则：数据来源可核对；数据质量处理显式计数，不允许"悄悄删行"。
+
+taobao_real:
+  role: 当前报告使用的数据
+  used_in_report: true
+  status: ran
+  source: 阿里巴巴天池「淘宝用户行为数据集」UserBehavior（Kaggle 匿名镜像下载）
+  source_url: https://www.kaggle.com/api/v1/datasets/download/marwa80/userbehavior
+  source_note: 原始来源阿里云天池 dataset/649；Kaggle 匿名 API 无需凭证
+  format: parquet (zstd)
+  external_path: <dataset_root>/parquet/taobao/taobao.parquet
+  archive_bytes: 949807480
+  sha256: 0fa6f4a0611113a2a7f6a4f1f5dfd58a4d65aaa65c7cfe98a0edf4b8c3403bee
+  sha256_note: 上式为下载压缩包的 SHA256；解压后 CSV 3.67 GB，转 Parquet 1.06 GB
+  parquet_bytes: 1108956735
+  rows_total: 100150806
+  time_window:
+    - "2017-11-25 00:00:00"
+    - "2017-12-03 23:59:59"
+  timezone: Asia/Shanghai
+  measured_by_pipeline:
+    rows_in_window: 100095230
+    rows_clean: 100095181
+    rows_outside_window: 55576
+    dup_rows_removed: 49
+    invalid_rows: 0
+    corrupt_timestamp_rows: 1899
+    users: 987991
+    items: 4161138
+    categories: 9437
+    days: 9
+  data_quality:
+    canonical_window: 2017-11-25 ~ 2017-12-03 (Asia/Shanghai)
+    rows_outside_window: 55576
+    outside_window_all_pv: true
+    outside_window_2017_nonwindow: 53677
+    outside_window_year_anomaly: 1899
+    corrupt_1902_or_2037: 3
+    rows_in_window_from_upstream: 100095230
+    upstream_corrupt_timestamp_rows: 1280
+    note: |
+      上游脚本记录的 1,280 行"损坏时间戳"用更窄的判定（仅极端年份/空时间戳）；
+      本仓库按"年份 ≠ 2017 且落在窗口外"统一判定为 1,899 行，其中 1902/2037 仅 3 行。
+      两套判定都完全落在 55,576 行窗口外记录之内，处理方式一致（剔除），不影响指标口径。
+      窗口外记录涉及 41,450 个用户，但仅 3 个用户在窗口内没有任何行为
+      （对用户漏斗分母影响 ≈ 0.0003%）。
+    handling: 过滤（filter），剔除行数与分类全部写入 outputs/metrics.json -> audit
+  rerun:
+    command: UBA_DATA_PATH=<dataset_root>/parquet/taobao/taobao.parquet make all
+    runtime_note: 15.3 GB 内存机器，8 GB 内存上限 / 8 线程，全量重跑约 1 分钟
+
+synthetic_fallback:
+  role: CI 与冒烟用的合成回退数据（不是报告结论来源）
+  used_in_report: false
+  path: data/userbehavior.csv.gz
+  generator: uba/synthetic.py
+  seed: 42
+  rows: 1000000
+  schema: user_id, item_id, category_id, behavior_type ∈ {pv, cart, fav, buy}, timestamp
+  window: 2017-11-25 ~ 2017-12-03 (Asia/Shanghai)
+  note: |
+    字段与行为类型对齐公开 UserBehavior，但生成规则是人为设定的，不可当作淘宝大盘结论。
+    CI 不能拉取 1 GB 真实数据，故保留这份 100 万行同 schema 数据保证管线不断；
+    报告、README 与 outputs/ 中的所有数字均来自 taobao_real，与此文件无关。

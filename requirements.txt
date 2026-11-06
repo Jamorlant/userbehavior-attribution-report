@@ -1,4 +1,6 @@
-pandas>=2.0
-numpy>=1.24
-matplotlib>=3.7
-markdown>=3.5
+# 运行时依赖（精确锁定：保证 6 个月后仍能跑出同样的图表）
+duckdb==2.0.0
+pandas==3.0.3
+numpy==2.5.0
+matplotlib==3.11.2
+markdown==3.11.2

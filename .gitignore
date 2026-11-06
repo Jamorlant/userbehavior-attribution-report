@@ -3,3 +3,16 @@ __pycache__/
 .ipynb_checkpoints/
 .DS_Store
 .vscode/
+
+# 本地配置（含路径/凭据）永不入库；模板见 .env.example
+.env
+
+# 工具缓存与临时产物
+.venv/
+.pytest_cache/
+.ruff_cache/
+build/
+build-ci/
+build-outputs/
+build-figures/
+*.log

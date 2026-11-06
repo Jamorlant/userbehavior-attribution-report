@@ -1,12 +1,20 @@
-"""把 report/attribution-report.md 渲染成排版整洁的单文件 HTML。"""
+"""把 report/attribution-report.md 渲染成单文件 HTML（可直接浏览器打开 / 打印成 PDF）。
 
+入口：`python -m uba.report [--report-dir DIR]`
+"""
+
+from __future__ import annotations
+
+import argparse
+from dataclasses import replace
 from pathlib import Path
 
 import markdown
 
-ROOT = Path(__file__).resolve().parents[1]
-SRC = ROOT / "report" / "attribution-report.md"
-DST = ROOT / "report" / "attribution-report.html"
+from uba.config import Settings, get_settings
+from uba.logging_utils import configure_logging, get_logger
+
+log = get_logger("uba.report")
 
 TEMPLATE = """<!DOCTYPE html>
 <html lang="zh-CN">
@@ -69,17 +77,50 @@ TEMPLATE = """<!DOCTYPE html>
 </html>
 """
 
+MARKDOWN_EXTENSIONS = ["tables", "fenced_code", "sane_lists"]
 
-def main():
-    text = SRC.read_text(encoding="utf-8")
-    html = markdown.markdown(
-        text,
-        extensions=["tables", "fenced_code", "sane_lists"],
-        output_format="html5",
-    )
-    DST.write_text(TEMPLATE.format(body=html), encoding="utf-8")
-    print(f"written: {DST.relative_to(ROOT)}  ({DST.stat().st_size / 1024:.0f} KB)")
+
+def render(text: str) -> str:
+    """Markdown → 完整 HTML 文档。"""
+    body = markdown.markdown(text, extensions=MARKDOWN_EXTENSIONS, output_format="html5")
+    return TEMPLATE.format(body=body)
+
+
+def build(settings: Settings) -> Path:
+    src = settings.report_markdown
+    if not src.is_file():
+        raise FileNotFoundError(f"报告正文不存在: {src}")
+    html = render(src.read_text(encoding="utf-8"))
+    dst = settings.report_html
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    dst.write_text(html, encoding="utf-8")
+    log.info("HTML 报告已生成: %s (%.0f KB)", dst, dst.stat().st_size / 1024)
+    return dst
+
+
+def main(argv: list[str] | None = None) -> int:
+    settings = get_settings()
+    ap = argparse.ArgumentParser(description="Markdown 报告 → 单文件 HTML")
+    ap.add_argument("--report-dir", type=Path, help="报告目录（含 attribution-report.md）")
+    ap.add_argument("--log-level", default=None)
+    args = ap.parse_args(argv)
+
+    overrides: dict[str, object] = {}
+    if args.report_dir:
+        overrides["report_dir"] = args.report_dir
+    if args.log_level:
+        overrides["log_level"] = args.log_level
+    if overrides:
+        settings = replace(settings, **overrides)
+    configure_logging(settings.log_level)
+
+    try:
+        build(settings)
+    except FileNotFoundError as exc:
+        log.error("%s", exc)
+        return 2
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
